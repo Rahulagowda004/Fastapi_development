@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Path
-from .utils.utils import get_data
+from fastapi.responses import JSONResponse
+from .utils.utils import get_data, save_data
+from .model.patients import Patient
 
 app = FastAPI()
 
@@ -26,3 +28,12 @@ def view_patient(patient_id: str = Path(..., description='ID of the patient in t
         return data[patient_id]
     raise HTTPException(status_code=404, detail='Patient not found')
 
+@app.post("/create")
+def create_patient(patient: Patient):
+    data = get_data()
+    if patient.id in data:
+        raise HTTPException(status_code=400, detail="Patient with this ID already exists.")
+    
+    data[patient.id] = patient.model_dump(exclude="id")
+    save_data(data)
+    return JSONResponse(status_code=200,content={'message':'patient created'})
