@@ -18,7 +18,11 @@ async def view_patients():
 
 @app.get('/patient/{patient_id}')
 def view_patient(patient_id: str = Path(..., description='ID of the patient in the DB', example='P001')):
+    # **...** indicates mandatory field in the Path function.
+    #Path function improves readability and documentation of the API.
+    
     data = get_data()
     if patient_id in data:
         return data[patient_id]
     raise HTTPException(status_code=404, detail='Patient not found')
+
