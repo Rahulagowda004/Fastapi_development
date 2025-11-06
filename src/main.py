@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Path, Query
 from fastapi.responses import JSONResponse
 from .utils.utils import get_data, save_data
-from .schema.patients import Patient
+from .schema.patients import Patient, Patient_update
 
 app = FastAPI()
 
@@ -47,3 +47,35 @@ def sort_patients(sort_by: str = Query(..., description="sort based on the heigh
     if order == "desc":
         sorted_patients.reverse()
     return {"patients": sorted_patients}
+
+@app.put("/update/{patient_id}")
+def update_patient(patient_id: str = Path(..., description="ID of the patient to update", example="P001"), patient_update: Patient_update = ...):
+    data = get_data()
+
+    if patient_id not in data:
+        raise HTTPException(status_code=404, detail='Patient not found')
+    
+    existing_patient_info = data[patient_id]
+
+    updated_patient_info = patient_update.model_dump(exclude_unset=True)
+
+    for key, value in updated_patient_info.items():
+        existing_patient_info[key] = value
+
+    #existing_patient_info -> pydantic object -> updated bmi + verdict
+    existing_patient_info['id'] = patient_id
+    patient_pydandic_obj = Patient(**existing_patient_info)
+    #-> pydantic object -> dict
+    existing_patient_info = patient_pydandic_obj.model_dump(exclude='id')
+
+    # add this dict to data
+    data[patient_id] = existing_patient_info
+
+    # save data
+    save_data(data)
+
+    return JSONResponse(status_code=200, content={'message':'patient updated'})
+
+    
+    
+    
