@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, Path
+from fastapi import FastAPI, HTTPException, Path, Query
 from fastapi.responses import JSONResponse
 from .utils.utils import get_data, save_data
-from .model.patients import Patient
+from .schema.patients import Patient
 
 app = FastAPI()
 
@@ -37,3 +37,13 @@ def create_patient(patient: Patient):
     data[patient.id] = patient.model_dump(exclude="id")
     save_data(data)
     return JSONResponse(status_code=200,content={'message':'patient created'})
+
+@app.get("/sort")
+def sort_patients(sort_by: str = Query(..., description="sort based on the height, weight or bmi", example="weight"), order: str = Query("asc", description="order can be asc or desc", example="asc")):
+    data = get_data()
+    if sort_by not in ["height", "weight", "bmi"]:
+        raise HTTPException(status_code=400, detail="Invalid sort parameter.")
+    sorted_patients = sorted(data.items(), key=lambda item: item[1].get(sort_by))
+    if order == "desc":
+        sorted_patients.reverse()
+    return {"patients": sorted_patients}
