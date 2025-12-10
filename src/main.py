@@ -1,3 +1,4 @@
+from ast import main
 from fastapi import FastAPI, HTTPException, Path, Query
 from fastapi.responses import JSONResponse
 from .utils.utils import get_data, save_data
@@ -88,3 +89,7 @@ def delete_patient(patient_id:str = Path(...,description="enter id of the patien
     save_data(data)
     
     return JSONResponse(status_code=200, content = {"message":"patient deletes successfully"})
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
