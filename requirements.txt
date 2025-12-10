@@ -7,6 +7,5 @@ ipywidgets
 kafka-python
 pydantic[email]
 requests
-typing
 unicorn
 uvicorn
